@@ -1,0 +1,30 @@
+{
+  "name": "field-generator",
+  "version": "1.0.0",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win portable"
+  },
+  "build": {
+    "appId": "com.field.generator",
+    "productName": "Java欄位生成器",
+    "win": {
+      "target": "portable",
+      "artifactName": "Java欄位生成器.exe"
+    },
+    "files": [
+      "main.js",
+      "index.html"
+    ],
+    "asar": true,
+    "compression": "maximum"
+  },
+  "dependencies": {
+    "glob-promise": "^6.0.5"
+  },
+  "devDependencies": {
+    "electron": "^29.1.0",
+    "electron-builder": "^24.9.1"
+  }
+}

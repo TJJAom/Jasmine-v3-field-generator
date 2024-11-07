@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Java 欄位生成器 - by Tom.Tang</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      max-width: 800px;
+      margin: 0 auto;
+      background-color: #f5f5f5;
+    }
+    .form-group {
+      margin-bottom: 15px;
+      background-color: white;
+      padding: 15px;
+      border-radius: 5px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+      color: #333;
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 8px;
+      box-sizing: border-box;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    button {
+      padding: 10px 20px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 4px;
+      font-size: 16px;
+      width: 100%;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    #result {
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 4px;
+      white-space: pre-wrap;
+      font-family: monospace;
+    }
+    .success {
+      background-color: #dff0d8;
+      color: #3c763d;
+      border: 1px solid #d6e9c6;
+    }
+    .error {
+      background-color: #f2dede;
+      color: #a94442;
+      border: 1px solid #ebccd1;
+    }
+    .loading {
+      display: none;
+      text-align: center;
+      margin-top: 10px;
+    }
+    .loading.active {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <h1>Java 欄位生成器 (Jasmine-v3 專用)</h1>
+  <div class="form-group">
+    <label>TABLE名稱:</label>
+    <input type="text" id="tableName" placeholder="ProductItem">
+  </div>
+  <div class="form-group">
+    <label>DB欄位名稱:</label>
+    <input type="text" id="dbFieldName" placeholder="ITEM_CODE">
+  </div>
+  <div class="form-group">
+    <label>JAVA資料型態:</label>
+    <input type="text" id="javaType" placeholder="String">
+  </div>
+  <div class="form-group">
+    <label>變數名稱:</label>
+    <input type="text" id="variableName" placeholder="itemCode">
+  </div>
+  <div class="form-group">
+    <label>Javadoc:</label>
+    <input type="text" id="javadoc" placeholder="主險種代號">
+  </div>
+  <div class="form-group">
+    <label>Example:</label>
+    <input type="text" id="example" placeholder="FIR01">
+  </div>
+  <div class="form-group">
+    <label>Spec: (選填，若無則留空白)</label>
+    <input type="text" id="spec" placeholder="@Spec">
+  </div>
+  <div class="form-group">
+    <label>專案路徑:</label>
+    <input type="text" id="projectPath" placeholder="輸入專案根目錄路徑">
+  </div>
+  <div class="form-group">
+  <label>放置位置: (選填)</label>
+  <input type="text" id="targetVariable" placeholder="engClauseGroup">
+  <small class="help-text">若不填寫則放置在類別結尾處。若填寫則放在指定變數後，找不到時放在 List 變數前。</small>
+</div>
+  <button onclick="generateFields()">生成欄位</button>
+  <div id="loading" class="loading">處理中...</div>
+  <div id="result"></div>
+
+  <script>
+    const { ipcRenderer } = require('electron');
+
+    async function generateFields() {
+      const loading = document.getElementById('loading');
+      const resultDiv = document.getElementById('result');
+
+      // 獲取所有輸入值
+      const data = {
+        tableName: document.getElementById('tableName').value,
+        dbFieldName: document.getElementById('dbFieldName').value,
+        javaType: document.getElementById('javaType').value,
+        variableName: document.getElementById('variableName').value,
+        javadoc: document.getElementById('javadoc').value,
+        example: document.getElementById('example').value,
+        spec: document.getElementById('spec').value,
+        projectPath: document.getElementById('projectPath').value,
+        targetVariable: document.getElementById('targetVariable').value  // 新增
+      };
+
+      // 基本驗證
+      if (!data.tableName || !data.projectPath) {
+        resultDiv.className = 'error';
+        resultDiv.textContent = '請填寫 TABLE名稱 和 專案路徑';
+        return;
+      }
+
+      try {
+        loading.classList.add('active');
+        resultDiv.textContent = '';
+        const result = await ipcRenderer.invoke('generate-fields', data);
+
+        resultDiv.className = result.success ? 'success' : 'error';
+        resultDiv.textContent = result.message;
+      } catch (error) {
+        resultDiv.className = 'error';
+        resultDiv.textContent = '發生錯誤: ' + error.message;
+      } finally {
+        loading.classList.remove('active');
+      }
+    }
+  </script>
+</body>
+</html>
